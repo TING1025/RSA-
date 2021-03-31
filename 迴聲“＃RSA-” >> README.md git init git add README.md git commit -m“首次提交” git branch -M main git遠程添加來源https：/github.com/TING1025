@@ -1,0 +1,73 @@
+from pprint import pprint
+
+from Crypto import Random
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5
+import base64
+
+
+
+def get_key():
+    rsa = RSA.generate(1024, Random.new().read)
+    
+    private_pem = rsa.exportKey()
+    public_pem = rsa.publickey().exportKey()
+
+    return {
+        "public_key": public_pem.decode(),
+        "private_key": private_pem.decode()
+    }
+
+
+private_key = """-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQDfEQ82qUrto7h4BL3TsA/DFXSdM44cbeY4kPccD7gLGhaZRClz
+YKIh5zYdfjBGF+0HXfMa1u9b7GNs2AjVIsx8Kx0QLnMfmtkmGWGhOXz/9IDLKJOx
+0weKv61gysKItgzVKn2mbLool4R/PQBc3AjDyHw+io1KpVz+3kRTaGs1fQIDAQAB
+AoGAWB4kFWLA/6k6OOcemd4mC9mQ7HyuOdrMJDJX+5TWDkSrArajbTmSMrRkczgj
+F71h3BQn8cVQXs695ARfUNrjTbi2Y0LjN7ScK7ExzTLdoMEFw5JsHggJZ0zBQY6w
+mwOdGfqzA6tZPXgkn+jqEha+CD6GrwnTM1oDGJC/aKG2OmECQQDkO9IhUhFc/PSU
+0zvGE6AOcqk5wlOuvMg+oAFHJHJZ9XW7+X/Nx0ZoVDFq/cZQj+46t+fiwUwhdW7l
+IfCvNGKFAkEA+jRQmWGKrbf1ns4S0SezJvysd5O6otRGJXr+Ex2uDhc39ZTeUsyg
+kjrLhp8STLMOmql+8g5fghct17EuCX1EmQJBAJz9BNnEkIrst/OSpH/nyeWGOx6u
+q077LaXd+2MLD9kO/O/Se3V5B9YFa4STkJCjoBMloswXd51gIGpdgSeSmd0CQQCL
+PrwwcGmWfo+ynqs4PajlpK9zKQMwhYS4bTejedwZOXDKOtx0Ji+i0hfcxwCPMQOK
+rZPZsIgUxUOdC508aLvZAkBDkHxunCzDm0w4DdTUN7S9YSpVvQEjK/xUQiWaKV12
+8QgskhU2DNdYK2NxifnWrKtx3uQmqMxX5aLuJZ4493yr
+-----END RSA PRIVATE KEY-----"""
+
+public_key = """-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfEQ82qUrto7h4BL3TsA/DFXSd
+M44cbeY4kPccD7gLGhaZRClzYKIh5zYdfjBGF+0HXfMa1u9b7GNs2AjVIsx8Kx0Q
+LnMfmtkmGWGhOXz/9IDLKJOx0weKv61gysKItgzVKn2mbLool4R/PQBc3AjDyHw+
+io1KpVz+3kRTaGs1fQIDAQAB
+-----END PUBLIC KEY-----
+"""
+
+def rsa_encode(message, public_key):
+    rsakey = RSA.importKey(public_key)  
+    cipher = PKCS1_v1_5.new(rsakey)  
+
+
+    cipher_text = base64.b64encode(
+        cipher.encrypt(message.encode(encoding="utf-8")))
+
+    return cipher_text.decode()
+
+
+def rsa_decode(cipher_text, private_key):
+    rsakey = RSA.importKey(private_key)  
+    cipher = PKCS1_v1_5.new(rsakey) 
+
+    text = cipher.decrypt(base64.b64decode(cipher_text), "ERROR")
+    return text.decode()
+
+
+if __name__ == '__main__':
+    message = "你好，世界！"
+    cipher = rsa_encode(message, public_key)
+    print(cipher)
+   
+
+    msg = rsa_decode(cipher, private_key)
+    print(msg)
+  
